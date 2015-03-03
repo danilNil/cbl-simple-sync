@@ -1,0 +1,18 @@
+{
+   "log": ["CRUD", "CRUD+", "HTTP", "HTTP+", "Access", "Cache", "Changes", "Changes+"],
+   "interface":":4984",
+   "adminInterface":":4985",
+   "databases":{
+      "gw":{
+         "users": {
+            "GUEST": {"disabled": false, "admin_channels": ["*"] }
+         },
+         "server":"walrus:/Users/danil/Documents/temp",
+         "bucket":"default",
+         "sync": ` function(doc) {
+					  channel("all_channels");
+					  channel(doc.channels);
+					} `
+      }
+   }
+}
