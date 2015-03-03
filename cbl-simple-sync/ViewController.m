@@ -29,6 +29,7 @@
 
 -(void)showCurrentPerson{
     currentPerson = [self getPersonFromDB];
+    if(currentPerson)
     self.name.text = currentPerson.name;
     self.position.text = currentPerson.position;
 }
@@ -69,11 +70,10 @@
 
 - (IBAction)update:(id)sender {
     [self putPersonInDB];
-    [AppDelegate runSync];
+
 }
 
 - (IBAction)refresh:(id)sender {
-    [AppDelegate runSync];
     [self showCurrentPerson];
 }
 @end

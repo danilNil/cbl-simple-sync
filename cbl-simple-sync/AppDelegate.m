@@ -19,6 +19,7 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [AppDelegate runSync];
     return YES;
 }
 
@@ -34,7 +35,7 @@
     CBLReplication * pull = [[self database] createPullReplication:[NSURL URLWithString:syncGatewayUrl]];
     
     for (CBLReplication * repl in @[push, pull]) {
-        [repl setContinuous:NO];
+        [repl setContinuous:YES];
         [repl start];
     }
 }
