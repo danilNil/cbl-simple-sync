@@ -76,6 +76,7 @@
 }
 
 - (IBAction)refresh:(id)sender {
+    [AppDelegate runSync];//https://github.com/couchbase/couchbase-lite-ios/issues/617
     [self showCurrentPerson];
 }
 
@@ -85,7 +86,7 @@
     NSArray* conflicts = [doc getConflictingRevisions: &error];
     if (conflicts.count > 1) {
         // There is more than one current revision, thus a conflict!
-//        [AppDelegate.database inTransaction: ^BOOL{
+        [AppDelegate.database inTransaction: ^BOOL{
             // Come up with a merged/resolved document in some way that's
             // appropriate for the app. You could even just pick the body of
             // one of the revisions.
@@ -105,14 +106,16 @@
                 }
 
                 NSError *error;
+                // saveAllowingConflict allows 'rev' to be updated even if it
+                // is not the document's current revision.
                 if (![newRev saveAllowingConflict: &error]){
                     NSLog(@"newRev save: &error: %@", error);
-//                    return NO;
+                    return NO;
                 }
             }
-//            return YES;
-//        }];
-//        NSError* error;
+            return YES;
+        }];
+
         [AppDelegate runSync];//https://github.com/couchbase/couchbase-lite-ios/issues/617
         [self showCurrentPerson];
     }
