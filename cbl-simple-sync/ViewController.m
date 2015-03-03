@@ -113,7 +113,7 @@
 //            return YES;
 //        }];
 //        NSError* error;
-        [AppDelegate runSync];
+        [AppDelegate runSync];//https://github.com/couchbase/couchbase-lite-ios/issues/617
         [self showCurrentPerson];
     }
 }
