@@ -76,9 +76,10 @@
 }
 
 - (IBAction)refresh:(id)sender {
-    [AppDelegate runSync];//https://github.com/couchbase/couchbase-lite-ios/issues/617
+//    [AppDelegate runSync];//https://github.com/couchbase/couchbase-lite-ios/issues/617
     [self showCurrentPerson];
 }
+
 
 - (IBAction)checkConflicts:(id)sender {
     CBLDocument* doc = [AppDelegate.database documentWithID: docId];
@@ -87,11 +88,8 @@
     if (conflicts.count > 1) {
         // There is more than one current revision, thus a conflict!
         [AppDelegate.database inTransaction: ^BOOL{
-            // Come up with a merged/resolved document in some way that's
-            // appropriate for the app. You could even just pick the body of
-            // one of the revisions.
             NSDictionary* mergedProps = [self mergeRevisions: conflicts];
-            
+
             // Delete the conflicting revisions to get rid of the conflict:
             CBLSavedRevision* current = doc.currentRevision;
             for (CBLSavedRevision* rev in conflicts) {
@@ -99,15 +97,13 @@
                 CBLUnsavedRevision *newRev = [rev createRevision];
                 if (rev == current) {
                     // add the merged revision
-                    newRev.properties = [NSMutableDictionary dictionaryWithDictionary: mergedProps];
+                    newRev.userProperties = [NSMutableDictionary dictionaryWithDictionary:mergedProps];
                 } else {
                     // mark other conflicts as deleted
                     newRev.isDeletion = YES;
                 }
 
                 NSError *error;
-                // saveAllowingConflict allows 'rev' to be updated even if it
-                // is not the document's current revision.
                 if (![newRev saveAllowingConflict: &error]){
                     NSLog(@"newRev save: &error: %@", error);
                     return NO;
@@ -115,23 +111,23 @@
             }
             return YES;
         }];
-
-        [AppDelegate runSync];//https://github.com/couchbase/couchbase-lite-ios/issues/617
         [self showCurrentPerson];
     }
 }
 
-- (NSDictionary*)mergeRevisions:(NSArray*)conflicts{
-    NSMutableDictionary* mergedDict = [[NSMutableDictionary alloc] initWithDictionary:((CBLRevision*)conflicts[0]).properties];
-    NSMutableArray* array = [NSMutableArray arrayWithArray:conflicts];
-    [array removeObjectAtIndex:0];
-    for(CBLRevision* rev in array){
-        for(NSString* key in rev.properties){
-            if(![key isEqualToString:@"_id"] && ![key isEqualToString:@"_rev"] && ![key isEqualToString:@"_revisions"])
-                mergedDict[key] = [NSString stringWithFormat:@"%@ %@", mergedDict[key], rev.properties[key]];
+- (NSDictionary*)mergeRevisions:(NSArray*)conflicts {
+    // Note: the first revision in the conflicts array may not be a current revision:
+    NSDictionary* userProperties = ((CBLRevision*)conflicts[0]).userProperties;
+    NSMutableDictionary* mergedDict = [NSMutableDictionary dictionaryWithDictionary:userProperties];
+    for (CBLRevision* rev in conflicts) {
+        if (rev == conflicts[0])
+            continue;
+        for (NSString* key in rev.userProperties) {
+            mergedDict[key] = [NSString stringWithFormat:@"%@ %@", mergedDict[key], rev.properties[key]];
         }
     }
     NSLog(@"final properties to merge: %@", mergedDict);
     return mergedDict;
 }
+
 @end

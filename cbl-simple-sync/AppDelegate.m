@@ -9,7 +9,7 @@
 #import "AppDelegate.h"
 #import <CouchbaseLite/CouchbaseLite.h>
 
-#define syncGatewayUrl @"http://192.168.0.100:4984/gw"
+#define syncGatewayUrl @"http://10.69.32.73:4984/gw"
 
 @interface AppDelegate ()
 
@@ -20,6 +20,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [AppDelegate runSync];
+    [CBLManager enableLogging:@"Sync"];
+    [CBLManager enableLogging:@"SyncVerbose"];
     return YES;
 }
 
