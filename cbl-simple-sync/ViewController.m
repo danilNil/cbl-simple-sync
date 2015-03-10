@@ -70,13 +70,35 @@
     NSLog(@"save:&error: %@", error);
 }
 
-- (IBAction)update:(id)sender {
+- (IBAction)save:(id)sender {
     [self putPersonInDB];
     
 }
 
+- (IBAction)update:(id)sender {
+    __block NSError * error = nil;
+    Person * person = nil;
+    if(currentPerson){
+        person = currentPerson;
+    }else{
+        person = [[Person alloc] initInDatabase:AppDelegate.database withId:docId];
+    }
+    
+    CBLDocument* personDoc = person.document;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [personDoc update:^BOOL(CBLUnsavedRevision * newRev) {
+            newRev[@"name"] = self.name.text;
+            newRev[@"position"] = self.position.text;
+            sleep(30000);
+    //        person.name = self.name.text;
+    //        person.position = self.position.text;
+            return YES;
+        } error:&error];
+    });
+    NSLog(@"save:&error: %@", error);
+}
+
 - (IBAction)refresh:(id)sender {
-//    [AppDelegate runSync];//https://github.com/couchbase/couchbase-lite-ios/issues/617
     [self showCurrentPerson];
 }
 
